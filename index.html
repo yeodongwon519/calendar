@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>달력</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ===== 사이드바 ===== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="logo">📅</span>
+        <span>달력</span>
+        <button id="themeBtn" class="theme-btn" title="테마 전환">🌙</button>
+      </div>
+
+      <!-- 연간 달력 (1년치) -->
+      <div class="year-block">
+        <div class="year-head">
+          <button id="yearPrev" class="mini-nav">‹</button>
+          <span id="yearTitle">2026년</span>
+          <button id="yearNext" class="mini-nav">›</button>
+        </div>
+        <div id="yearGrid" class="year-grid"></div>
+      </div>
+    </aside>
+
+    <!-- ===== 메인 ===== -->
+    <main class="main">
+      <header class="topbar">
+        <div class="nav">
+          <button id="prevBtn" class="icon-btn" title="이전 달 (←)">‹</button>
+          <button id="todayBtn" class="today-btn">오늘</button>
+          <button id="nextBtn" class="icon-btn" title="다음 달 (→)">›</button>
+        </div>
+        <h1 id="title">2026년 6월</h1>
+        <div class="spacer"></div>
+      </header>
+
+      <div class="weekdays">
+        <div class="wd sun">일</div><div class="wd">월</div><div class="wd">화</div>
+        <div class="wd">수</div><div class="wd">목</div><div class="wd">금</div>
+        <div class="wd sat">토</div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+
+      <footer class="hint">
+        <span>날짜 클릭 → 바로 입력 · <b>Enter</b> 저장하고 계속 · <b>Esc</b> 닫기 · 항목 클릭=완료 · 더블클릭=수정 · 우클릭=삭제</span>
+      </footer>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

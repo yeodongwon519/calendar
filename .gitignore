@@ -1,0 +1,11 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Obsidian (vault 설정이 상위에 있으므로 혹시 모를 잔여물 차단)
+.obsidian/
