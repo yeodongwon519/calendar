@@ -1,0 +1,15 @@
+name = "calendar-widget-api"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# KV 네임스페이스 — 아래 id 를 본인 것으로 바꿔야 함
+# 만드는 법:  wrangler kv namespace create CAL_KV
+# 출력된 id 를 여기에 붙여넣기.
+kv_namespaces = [
+  { binding = "CAL_KV", id = "여기에_KV_네임스페이스_ID_붙여넣기" }
+]
+
+# PEPPER 는 코드/파일에 넣지 말고 아래 명령으로 설정:
+#   wrangler secret put PEPPER
+# (아무 긴 랜덤 문자열. 비밀번호 해시에 섞이는 서버 비밀값. 한 번 정하면 바꾸지 말 것
+#  — 바꾸면 기존 계정 키가 달라져 데이터를 못 찾게 됨)

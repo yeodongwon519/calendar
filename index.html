@@ -2,8 +2,19 @@
 <html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>달력</title>
+
+  <!-- ===== PWA (아이폰 홈화면 앱) ===== -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0e0f12" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="달력" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -37,6 +48,8 @@
         </div>
         <h1 id="title">2026년 6월</h1>
         <div class="spacer"></div>
+        <button id="syncBtn" class="icon-btn" title="로그인 / 동기화">👤</button>
+        <button id="themeBtnMobile" class="icon-btn mobile-only" title="테마 전환">🌙</button>
       </header>
 
       <div class="weekdays">
@@ -53,5 +66,28 @@
     </main>
   </div>
   <script src="app.js"></script>
+  <script src="sync.js"></script>
+  <script>
+    // 모바일 상단바 테마 버튼 → 사이드바 테마 버튼과 동기화
+    (function () {
+      var mob = document.getElementById("themeBtnMobile");
+      var main = document.getElementById("themeBtn");
+      if (mob && main) {
+        var sync = function () {
+          var t = document.documentElement.getAttribute("data-theme");
+          mob.textContent = t === "dark" ? "🌙" : "☀️";
+        };
+        mob.addEventListener("click", function () { main.click(); sync(); });
+        sync();
+      }
+    })();
+
+    // 서비스워커 등록 (오프라인 동작 + 홈화면 앱)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

@@ -13,7 +13,12 @@ function load() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
   catch { return {}; }
 }
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+  localStorage.setItem(STORE_KEY + ".updatedAt", String(Date.now()));
+  // 위젯 동기화(sync.js)가 켜져 있으면 클라우드로 push
+  if (window.CalendarSync && window.CalendarSync.onSave) window.CalendarSync.onSave();
+}
 
 function keyOf(d) {
   const y = d.getFullYear();
@@ -22,6 +27,7 @@ function keyOf(d) {
   return `${y}-${m}-${day}`;
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const isMobile = () => window.matchMedia("(max-width: 640px)").matches;
 const sameDay = (a, b) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
@@ -114,7 +120,18 @@ function buildCell(date, viewMonth, today) {
   list.forEach(t => tasks.appendChild(buildTask(key, t)));
   cell.appendChild(tasks);
 
+  // 모바일: 칸(또는 그 안 항목) 어디를 탭해도 그 날 팝오버 → 추가·수정·완료를 크게
+  // 캡처 단계에서 가로채 내부 항목의 작은 탭 핸들러보다 먼저 처리
   cell.addEventListener("click", (e) => {
+    if (!isMobile()) return;
+    if (e.target.closest(".input-row")) return;
+    e.stopPropagation();
+    openDayPopover(key);
+  }, true);
+
+  // 데스크탑: 빈 칸 탭 → 인라인 입력
+  cell.addEventListener("click", (e) => {
+    if (isMobile()) return;
     if (e.target.closest(".task") || e.target.closest(".input-row")) return;
     openInput(cell, key);
   });
@@ -433,3 +450,16 @@ applyTheme(localStorage.getItem(THEME_KEY) || "dark");
 // ===== 최초 렌더 =====
 function renderAll() { renderMain(); renderYear(); }
 renderAll();
+
+// ===== 위젯 동기화용 외부 인터페이스 (sync.js에서 사용) =====
+window.CalendarApp = {
+  getStore: () => store,
+  getUpdatedAt: () => Number(localStorage.getItem(STORE_KEY + ".updatedAt")) || 0,
+  // 원격에서 받은 데이터로 교체 (로컬에도 저장하고 다시 그림)
+  replaceStore: (s, updatedAt) => {
+    store = s || {};
+    localStorage.setItem(STORE_KEY, JSON.stringify(store));
+    if (updatedAt) localStorage.setItem(STORE_KEY + ".updatedAt", String(updatedAt));
+    renderAll();
+  },
+};

@@ -9,3 +9,8 @@ desktop.ini
 
 # Obsidian (vault 설정이 상위에 있으므로 혹시 모를 잔여물 차단)
 .obsidian/
+
+# Cloudflare wrangler (위젯 백엔드 빌드 캐시·로컬상태)
+widget/.wrangler/
+widget/node_modules/
+.dev.vars
