@@ -13,4 +13,5 @@ desktop.ini
 # Cloudflare wrangler (위젯 백엔드 빌드 캐시·로컬상태)
 widget/.wrangler/
 widget/node_modules/
+widget/.pepper-backup.txt
 .dev.vars

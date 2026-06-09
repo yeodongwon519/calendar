@@ -6,7 +6,7 @@ compatibility_date = "2024-11-01"
 # 만드는 법:  wrangler kv namespace create CAL_KV
 # 출력된 id 를 여기에 붙여넣기.
 kv_namespaces = [
-  { binding = "CAL_KV", id = "여기에_KV_네임스페이스_ID_붙여넣기" }
+  { binding = "CAL_KV", id = "f27a5d0e434d423ba3440906e13657f0" }
 ]
 
 # PEPPER 는 코드/파일에 넣지 말고 아래 명령으로 설정:
