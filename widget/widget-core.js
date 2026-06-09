@@ -1,12 +1,14 @@
 // ===== 달력 위젯 코어 (Scriptable) =====
 // 부트스트랩이 정의한 전역 사용: API_URL, USERNAME, PASSWORD, APP_URL
-// 이번 달 전체 일정을 날짜순으로 보여준다. (위젯 크기에 맞게 잘림)
+// 이번 주(일~토) 일정을 요일순으로 보여준다. 탭해도 아무 데도 안 열림(보기 전용).
 (async function () {
   var C = {
     bg: new Color("#16181d"), text: new Color("#e9eaed"),
-    muted: new Color("#7d818b"), done: new Color("#555962"), accent: new Color("#f0653f")
+    muted: new Color("#7d818b"), done: new Color("#555962"),
+    accent: new Color("#f0653f"), sun: new Color("#f08a7a"), sat: new Color("#7aa6f0")
   };
   function pad(n) { return String(n).padStart(2, "0"); }
+  function keyOf(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
   async function fetchData() {
     var req = new Request(API_URL);
     var basic = Data.fromString(USERNAME + ":" + PASSWORD).toBase64String();
@@ -18,7 +20,7 @@
   var w = new ListWidget();
   w.backgroundColor = C.bg;
   w.setPadding(13, 15, 13, 14);
-  w.url = APP_URL;
+  // (탭해도 브라우저 안 열림 — w.url 설정 안 함)
 
   var store = {};
   try {
@@ -33,50 +35,57 @@
   }
 
   var today = new Date();
-  var Y = today.getFullYear();
-  var M = today.getMonth() + 1;
-  var prefix = Y + "-" + pad(M) + "-";       // 이번 달 키 접두사
-  var todayKey = prefix + pad(today.getDate());
+  var todayKey = keyOf(today);
+  var WD = ["일", "월", "화", "수", "목", "금", "토"];
 
-  // 이번 달 일정을 날짜순으로 펼치기
+  // 이번 주 일요일 ~ 토요일
+  var start = new Date(today);
+  start.setDate(today.getDate() - today.getDay());
+  var endD = new Date(start); endD.setDate(start.getDate() + 6);
+
+  // 이번 주 일정 펼치기 (요일순)
   var items = [];
-  Object.keys(store).filter(function (k) { return k.indexOf(prefix) === 0; })
-    .sort()
-    .forEach(function (k) {
-      var day = parseInt(k.slice(8), 10);
-      (store[k] || []).forEach(function (it) {
-        items.push({ day: day, key: k, text: it.text, done: it.done });
-      });
-    });
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(start); d.setDate(start.getDate() + i);
+    var k = keyOf(d);
+    var dow = d.getDay(), dayNum = d.getDate(), isT = (k === todayKey);
+    var arr = store[k] || [];
+    for (var j = 0; j < arr.length; j++) {
+      items.push({ dow: dow, day: dayNum, isToday: isT, text: arr[j].text, done: arr[j].done });
+    }
+  }
   var totalN = items.length;
   var doneN = items.filter(function (x) { return x.done; }).length;
 
-  // 헤더: "6월"  +  완료/전체
+  // 헤더: "이번 주 6/8–6/14"  +  완료/전체
   var header = w.addStack(); header.centerAlignContent();
-  var h1 = header.addText(M + "월");
+  var h1 = header.addText("이번 주");
   h1.textColor = C.text; h1.font = Font.boldSystemFont(15);
+  header.addSpacer(6);
+  var hr = header.addText((start.getMonth() + 1) + "/" + start.getDate() + "–" + (endD.getMonth() + 1) + "/" + endD.getDate());
+  hr.textColor = C.muted; hr.font = Font.systemFont(11);
   header.addSpacer();
   if (totalN) {
-    var c = header.addText(doneN + "/" + totalN);
-    c.textColor = C.muted; c.font = Font.systemFont(12);
+    var cc = header.addText(doneN + "/" + totalN);
+    cc.textColor = C.muted; cc.font = Font.systemFont(12);
   }
   w.addSpacer(7);
 
   if (!totalN) {
-    var em = w.addText("이번 달 일정 없음");
+    var em = w.addText("이번 주 일정 없음");
     em.textColor = C.muted; em.font = Font.systemFont(13);
   } else {
     var fam = config.widgetFamily || "medium";
-    var max = fam === "small" ? 4 : (fam === "large" ? 15 : 7);
+    var max = fam === "small" ? 4 : (fam === "large" ? 16 : 8);
     items.slice(0, max).forEach(function (it) {
-      var isToday = (it.key === todayKey);
       var row = w.addStack(); row.centerAlignContent();
-      // 날짜 (오늘은 강조)
-      var dnum = row.addText(it.day + "일");
-      dnum.textColor = isToday ? C.accent : C.muted;
-      dnum.font = isToday ? Font.boldSystemFont(12) : Font.systemFont(12);
-      dnum.lineLimit = 1;
-      row.addSpacer(7);
+      // 요일 (오늘=주황 강조, 일=빨강, 토=파랑)
+      var dcol = it.isToday ? C.accent : (it.dow === 0 ? C.sun : (it.dow === 6 ? C.sat : C.muted));
+      var dlab = row.addText(WD[it.dow] + " " + it.day);
+      dlab.textColor = dcol;
+      dlab.font = it.isToday ? Font.boldSystemFont(12) : Font.systemFont(12);
+      dlab.lineLimit = 1;
+      row.addSpacer(8);
       // 할일
       var tx = row.addText((it.done ? "✓ " : "") + it.text);
       tx.textColor = it.done ? C.done : C.text;
