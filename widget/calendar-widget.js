@@ -6,5 +6,5 @@ const USERNAME = "여기에_아이디";
 const PASSWORD = "여기에_비밀번호";
 const APP_URL = "https://yeodongwon519.github.io/calendar/";
 const CORE = "https://yeodongwon519.github.io/calendar/widget/widget-core.js";
-const src = await new Request(CORE).loadString();
+const src = await new Request(CORE + "?t=" + Date.now()).loadString();
 await eval(src);
