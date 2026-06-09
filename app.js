@@ -463,3 +463,15 @@ window.CalendarApp = {
     renderAll();
   },
 };
+
+// ===== 딥링크: 위젯에서 ?day=YYYY-MM-DD 로 열면 그 날 팝오버 =====
+function openDayFromUrl() {
+  const m = location.search.match(/[?&]day=(\d{4}-\d{2}-\d{2})/);
+  if (!m) return;
+  const [y, mo] = m[1].split("-").map(Number);
+  view = new Date(y, mo - 1, 1);
+  yearView = y;
+  renderAll();
+  openDayPopover(m[1]);
+}
+openDayFromUrl();
