@@ -1,5 +1,5 @@
-// 달력 PWA 서비스워커 — 앱 셸 캐시 (오프라인 동작)
-const CACHE = "calendar-v2";
+// 달력 PWA 서비스워커 — 항상 최신(네트워크) 우선, 오프라인일 때만 캐시
+const CACHE = "calendar-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -24,16 +24,19 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// 네트워크 우선, 실패 시 캐시 (정적 사이트라 갱신도 잘 반영되게)
+// 네트워크 우선 + HTTP 캐시 우회(no-store): 온라인이면 항상 최신을 받아온다.
+// 실패(오프라인)일 때만 캐시에서 꺼냄.
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  e.respondWith(
-    fetch(e.request)
-      .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
-        return res;
-      })
-      .catch(() => caches.match(e.request).then((r) => r || caches.match("./index.html")))
-  );
+  e.respondWith((async () => {
+    try {
+      const fresh = await fetch(e.request, { cache: "no-store" });
+      const cache = await caches.open(CACHE);
+      cache.put(e.request, fresh.clone()).catch(() => {});
+      return fresh;
+    } catch (err) {
+      const cached = await caches.match(e.request);
+      return cached || caches.match("./index.html");
+    }
+  })());
 });
